@@ -1,0 +1,3 @@
+# Pluggable DataSource with yfinance default and local cache
+
+Market data is fetched through a `DataSource` protocol with a single `fetch_ohlcv(ticker, start, end)` method. The default adapter wraps `yfinance`. Downloaded data is cached locally as Parquet (or CSV) so backtests and repeated analyses don't repeatedly hit Yahoo's servers. We considered hard-coding `yfinance` throughout (simpler), but `yfinance` is fragile (rate limits, schema changes) and the engine will likely need a paid source (Kite, Upstox) for production use. The protocol boundary costs one file and prevents a hard coupling that would force a rewrite later.
