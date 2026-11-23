@@ -1,0 +1,31 @@
+# Derived data — not committed
+data/cache/
+output/
+
+# Python artefacts
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+.env
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# Test / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Editor
+.idea/
+.vscode/
+*.swp
+*~
+
+# OS
+.DS_Store
+Thumbs.db

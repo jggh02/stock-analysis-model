@@ -1,0 +1,16 @@
+# stockengine configuration
+# All keys are optional — missing keys fall back to the dataclass defaults.
+
+risk_free_rate: 0.065          # 91-day Indian T-bill yield
+max_weight: 0.25               # Maximum single-stock Weight
+rebalancing_period: "monthly"  # Rebalancing Period
+transaction_cost: 0.0028       # Flat round-trip cost (0.28%)
+benchmark_ticker: "^NSEI"      # Benchmark: Nifty 50
+embargo_days: 5                # Embargo Period (trading days)
+tilt_top: 1.2                  # Tilt Factor for top-quartile Tickers
+tilt_bottom: 0.8               # Tilt Factor for bottom-quartile Tickers
+direction_threshold: 0.50      # Directional Probability gate
+trading_days_per_year: 252     # Annualisation factor
+strategy: "hrp"                # Optimizer strategy: hrp | mvo
+min_training_years: 2          # Minimum Walk-Forward training window (years)
+initial_weights: "equal"       # Backtest initial Weights: equal | actual
