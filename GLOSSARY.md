@@ -83,3 +83,19 @@ _Avoid_: order history (ambiguous)
 **Benchmark**:
 The return series against which portfolio performance is measured in backtest reports. User-configurable; defaults to the Nifty 50 index (`^NSEI`). An equal-weighted buy-and-hold of the Portfolio's own tickers is always computed alongside as a secondary baseline.
 _Avoid_: index (too generic), market (ambiguous)
+
+**DMA Regime**:
+A three-state classification of a ticker's trend posture, derived from the 50-day and 200-day simple moving averages (DMA50, DMA200). **Bullish**: Close > DMA50 > DMA200. **Bearish**: Close < DMA50 < DMA200. **Transitional**: everything else (crossover in progress, mixed signals). A **Golden Cross** (DMA50 crosses above DMA200) marks a shift toward Bullish; a **Death Cross** (DMA50 crosses below DMA200) marks a shift toward Bearish.
+_Avoid_: trend (too vague), signal (overloaded)
+
+**Forecast**:
+The output of the forecasting model for a single ticker at a single Rebalancing date. Contains two fields: `predicted_rank` (float; lower = expected to outperform peers) and `direction_prob` (float, 0–1; estimated probability that the ticker's Excess Return over the next Rebalancing Period is positive). Consumed by the optimizer via gate-then-tilt integration.
+_Avoid_: prediction (ambiguous — could mean the model itself or its output), signal
+
+**Tilt Factor**:
+A rank-derived multiplier applied to the optimizer's base Weight for each ticker. Top-quartile predicted ranks receive a multiplier > 1.0 (default 1.2×); bottom-quartile receive < 1.0 (default 0.8×). After tilting, Weights are re-normalised to sum to 1.0. User-configurable magnitudes in `config.yaml`.
+_Avoid_: alpha weight, overlay
+
+**Global Minimum Variance**:
+The operating mode of Mean-Variance Optimisation in this system. All tickers are assigned equal expected returns, so the optimizer minimises portfolio variance without taking a view on which tickers will outperform. This makes MVO a pure risk-based allocator (like HRP), with return alpha entering only via the Tilt Factor from the forecaster.
+_Avoid_: efficient frontier (implies varying expected returns), Markowitz (implies the full expected-return formulation)
