@@ -1,0 +1,16 @@
+{
+  "holdings": [
+    {
+      "ticker": "RELIANCE",
+      "quantity": 10.0,
+      "buy_price": 2500.5,
+      "buy_date": "2023-01-15"
+    },
+    {
+      "ticker": "TCS",
+      "quantity": 5.0,
+      "buy_price": 3400.0,
+      "buy_date": null
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+Groww Order History / Tradebook
+Client ID: 12345678
+,
+Stock name,Symbol,ISIN,Type,Quantity,Value,Price,Exchange,Exchange Order Id,Executed date and time,Order status
+Reliance Industries Ltd,RELIANCE-EQ,INE002A01018,BUY,10,"₹24,000.00","₹2,400.00",NSE,100001,2023-01-15 10:30:00,Executed
+Reliance Industries Ltd,RELIANCE-EQ,INE002A01018,BUY,20,"₹54,000.00","₹2,700.00",NSE,100002,2023-06-20 14:15:30,Executed
+Reliance Industries Ltd,RELIANCE-EQ,INE002A01018,SELL,5,"₹14,500.00","₹2,900.00",NSE,100003,2024-01-10 11:00:00,Executed
+Tata Consultancy Services Ltd,TCS-EQ,INE467B01029,BUY,"1,000","₹35,00,000.00","₹3,500.00",NSE,100004,2022-11-05 09:45:00,Executed
+End of Report
