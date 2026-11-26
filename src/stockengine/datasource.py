@@ -20,10 +20,13 @@ Glossary alignment:
 from __future__ import annotations
 
 from datetime import date, timedelta
-from typing import Protocol, runtime_checkable
+from pathlib import Path
+from typing import Protocol, Union, runtime_checkable
 
 import numpy as np
 import pandas as pd
+from pandas.tseries.holiday import AbstractHolidayCalendar, Holiday
+import yfinance as yf
 
 
 @runtime_checkable
@@ -167,3 +170,77 @@ class FixtureSource:
         # Slice to requested window.
         mask = (df.index.date >= start) & (df.index.date <= end)
         return df.loc[mask]
+
+
+class _NSEHolidayCalendar(AbstractHolidayCalendar):
+    """Fixed-date NSE market holidays."""
+
+    rules = [
+        Holiday("Republic Day", month=1, day=26),
+        Holiday("Maharashtra Day", month=5, day=1),
+        Holiday("Independence Day", month=8, day=15),
+        Holiday("Mahatma Gandhi Jayanti", month=10, day=2),
+        Holiday("Christmas", month=12, day=25),
+    ]
+
+
+class YFinanceSource:
+    """DataSource implementation backed by ``yfinance`` for NSE equities."""
+
+    _COLUMNS = ["open", "high", "low", "close", "volume"]
+    _CALENDAR = _NSEHolidayCalendar()
+
+    def fetch_ohlcv(self, ticker: str, start: date, end: date) -> pd.DataFrame:
+        """Fetch daily adjusted Price Bars for *ticker* in [*start*, *end*]."""
+        yf_ticker = ticker if ticker.startswith("^") else f"{ticker}.NS"
+        raw = yf.download(
+            yf_ticker,
+            start=start.isoformat(),
+            end=(end + timedelta(days=1)).isoformat(),
+            auto_adjust=True,
+            progress=False,
+        )
+        if raw.empty:
+            return pd.DataFrame(columns=self._COLUMNS, index=pd.DatetimeIndex([]))
+
+        df = raw.copy()
+        if isinstance(df.columns, pd.MultiIndex):
+            df.columns = df.columns.get_level_values(0)
+        df.columns = [str(c).lower() for c in df.columns]
+        df = df[self._COLUMNS]
+        df.index = pd.to_datetime(df.index).tz_localize(None)
+
+        holidays = self._CALENDAR.holidays(start=start, end=end)
+        is_weekday = df.index.day_of_week < 5
+        is_not_holiday = ~df.index.normalize().isin(holidays)
+        in_range = (df.index.date >= start) & (df.index.date <= end)
+        return df.loc[is_weekday & is_not_holiday & in_range]
+
+
+class CachedSource:
+    """Decorator DataSource that caches Price Bars as local Parquet files."""
+
+    def __init__(
+        self,
+        source: DataSource,
+        cache_dir: Union[str, Path] = Path("data/cache"),
+    ) -> None:
+        self._source = source
+        self._cache_dir = Path(cache_dir)
+
+    def _cache_path(self, ticker: str) -> Path:
+        clean_ticker = ticker.removesuffix(".NS")
+        return self._cache_dir / f"{clean_ticker}.parquet"
+
+    def fetch_ohlcv(self, ticker: str, start: date, end: date) -> pd.DataFrame:
+        """Return cached Price Bars if present, else fetch, cache, and return."""
+        cache_path = self._cache_path(ticker)
+        if cache_path.exists():
+            cached = pd.read_parquet(cache_path)
+            mask = (cached.index.date >= start) & (cached.index.date <= end)
+            return cached.loc[mask]
+
+        df = self._source.fetch_ohlcv(ticker, start, end)
+        self._cache_dir.mkdir(parents=True, exist_ok=True)
+        df.to_parquet(cache_path)
+        return df
